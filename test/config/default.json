@@ -1,0 +1,8 @@
+{
+    "foo": "BAR",
+    "loggingConfig": {
+        "level":"debug",
+        "timestamp":true,
+        "colorize":true
+    }
+}

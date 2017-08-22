@@ -1,0 +1,77 @@
+{
+  "rolesHierarchyConfig": {
+    "loggingConfig": {
+      "level": "debug",
+      "timestamp": true,
+      "colorize": true
+    },
+    "treeModelConfig": {
+      "childrenPropertyName": "subordinates"
+    },
+    "rolesHierarchy": {
+      "name": "admin",
+      "subordinates": [
+        {
+          "name": "user-admin",
+          "subordinates": [
+            {
+              "name": "schoolAdmin",
+              "subordinates": [
+                {
+                  "name": "teacher",
+                  "subordinates": [
+                    {
+                      "name": "student",
+                      // a student can see the following fields
+                      "visibleUserFields": {
+                        "_id": 1,
+                        "username": 1,
+                        "profile.name": 1,
+                        "roles": 1
+                      }
+                    }
+                  ],
+                  // new users created by a teacher get the student role
+                  "defaultNewUserRoles": [
+                    "student"
+                  ],
+                  // new users created by a teacher get the teacher's profile.school and profile.classId
+                  "profileFilters": [
+                    "school",
+                    "classId"
+                  ],
+                  // a teacher can see everything a student can see, also email addresses
+                  "visibleUserFields": {
+                    "emails": 1
+                  }
+                }
+              ],
+              "profileFilters": [
+                "school"
+              ]
+            },
+            {
+              "name":"footballCoach",
+              "subordinates":[
+                {
+                  "name": "footballCaptain",
+                  "subordinates" :[
+                    {
+                      "name":"footballPlayer"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "defaultNewUserRoles": [
+            "teacher"
+          ]
+        }
+      ],
+      "defaultNewUserRoles": [
+        "teacher"
+      ]
+    }
+  }
+}

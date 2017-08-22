@@ -1,0 +1,31 @@
+{
+  "name": "role-hierarchy",
+  "version": "1.0.0",
+  "description": "A data model for a hierarchy of roles, suitable for mongodb users or meteor",
+  "main": "./distribution/role-hierarchy.js",
+  "scripts": {
+    "build": "babel source --presets babel-preset-es2015 --out-dir distribution",
+    "test": "NODE_CONFIG_DIR=test/config NODE_ENV=test mocha --require babel-register"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "config": "^1.26.2",
+    "topiary": "^1.1.2",
+    "tree-model": "^1.0.6",
+    "underscore": "^1.8.3",
+    "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-env": "^1.6.0",
+    "babel-register": "^6.24.1",
+    "config": "^1.26.1",
+    "mocha": "^3.5.0"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
+  }
+}

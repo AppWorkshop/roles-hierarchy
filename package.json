@@ -7,7 +7,12 @@
     "build": "babel source --presets babel-preset-es2015 --out-dir distribution",
     "test": "NODE_CONFIG_DIR=test/config NODE_ENV=test mocha --require babel-register"
   },
-  "author": "",
+  "author": "Mike Cunneen",
+  "homepage": "https://github.com/AppWorkshop/roles-hierarchy",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AppWorkshop/roles-hierarchy"
+  },
   "license": "ISC",
   "dependencies": {
     "config": "^1.26.2",

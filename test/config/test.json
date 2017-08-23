@@ -1,7 +1,7 @@
 {
   "rolesHierarchyConfig": {
     "loggingConfig": {
-      "level": "debug",
+      "level": "info",
       "timestamp": true,
       "colorize": true
     },

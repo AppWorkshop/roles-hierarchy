@@ -1,6 +1,8 @@
 Role Hierarchy Data Model
 ===
 
+[![Build Status](https://travis-ci.org/AppWorkshop/roles-hierarchy.svg?branch=master)](https://travis-ci.org/AppWorkshop/roles-hierarchy)
+
 This is a data model for a hierarchy of roles, suitable for mongodb users or meteor.
 
 Given a definition of a role hierarchy :

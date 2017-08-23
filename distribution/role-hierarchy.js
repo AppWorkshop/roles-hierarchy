@@ -19,23 +19,34 @@ var RoleHierarchy = function () {
 
   /**
    * create a new instance of RoleHierarchy
-   * @param {Object} paramsObj containing:
+   * @param {Object} paramsObj containing a rolesHierarchy and a loggingConfig (optional) and a TreeModel config (optional):
    * {
-   *   }
+   *   rolesHierarchy: {"name":"teacher", "subordinates": [ {"name":"student"} ]},
+   *   treeModelConfig: { "childrenPropertyName": "subordinates" },
+   *   loggingConfig: { "level": "debug"}
+   * }
    */
   function RoleHierarchy(paramsObj) {
     _classCallCheck(this, RoleHierarchy);
 
     // set up config defaults
+    var loggingConfig = paramsObj.loggingConfig || {
+      "level": "debug",
+      "timestamp": true,
+      "colorize": true
+    };
+
+    var treeModelConfig = paramsObj.treeModelConfig || { "childrenPropertyName": "subordinates" };
+
     this.logger = new winston.Logger({
-      transports: [new winston.transports.Console(paramsObj.loggingConfig)]
+      transports: [new winston.transports.Console(loggingConfig)]
     });
 
     // actual constructor stuff here.
 
     // get treeModelConfig from config
-    // need to clone the treeModelConfig
-    var treeModelConfig = JSON.parse(JSON.stringify(paramsObj.treeModelConfig));
+    // we need a clone of the treeModelConfig (it doesn't work straight from node-config)
+    treeModelConfig = JSON.parse(JSON.stringify(treeModelConfig));
     this.treeModel = new TreeModel(treeModelConfig);
     this.root = this.treeModel.parse(paramsObj.rolesHierarchy);
     this.logger.debug(this.getTopiaryAsString(this.root.model));
@@ -204,7 +215,7 @@ var RoleHierarchy = function () {
     /**
      * Get an object of all of the Meteor.user fields that the provided user can see
      * @param myUserObj the user object of the provided user, with a roles property
-     * @returns {object} an object of the format {orgName: [{field1: 1, field2: 2}], the values being Meteor.user field names that the provided user can see, suitable for inclusion 
+     * @returns {object} an object of the format {orgName: [{field1: 1, field2: 2}]}, the values being Meteor.user field names that the provided user can see, suitable for inclusion 
      * as a "fields" property in a mongodb Collection query.
      */
 

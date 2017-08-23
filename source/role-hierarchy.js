@@ -11,23 +11,35 @@ class RoleHierarchy {
 
   /**
    * create a new instance of RoleHierarchy
-   * @param {Object} paramsObj containing:
+   * @param {Object} paramsObj containing a rolesHierarchy and a loggingConfig (optional) and a TreeModel config (optional):
    * {
-   *   }
+   *   rolesHierarchy: {"name":"teacher", "subordinates": [ {"name":"student"} ]},
+   *   treeModelConfig: { "childrenPropertyName": "subordinates" },
+   *   loggingConfig: { "level": "debug"}
+   * }
    */
   constructor(paramsObj) {
+
     // set up config defaults
+    let loggingConfig = paramsObj.loggingConfig || {
+      "level": "debug",
+      "timestamp": true,
+      "colorize": true
+    };
+
+    let treeModelConfig = paramsObj.treeModelConfig || { "childrenPropertyName": "subordinates" };
+
     this.logger = new (winston.Logger)({
       transports: [
-        new (winston.transports.Console)(paramsObj.loggingConfig)
+        new (winston.transports.Console)(loggingConfig)
       ]
     });
 
     // actual constructor stuff here.
 
     // get treeModelConfig from config
-    // need to clone the treeModelConfig
-    let treeModelConfig = JSON.parse(JSON.stringify(paramsObj.treeModelConfig));
+    // we need a clone of the treeModelConfig (it doesn't work straight from node-config)
+    treeModelConfig = JSON.parse(JSON.stringify(treeModelConfig));
     this.treeModel = new TreeModel(treeModelConfig);
     this.root = this.treeModel.parse(paramsObj.rolesHierarchy);
     this.logger.debug(this.getTopiaryAsString(this.root.model));
@@ -61,7 +73,7 @@ class RoleHierarchy {
         // default to the global group if there is no org info stored on the profile
         myOrganizations = [_GLOBAL_GROUP];
       }
-    }    
+    }
     return myOrganizations;
   }
 
@@ -185,7 +197,7 @@ class RoleHierarchy {
             } // role not in hierarchy. That's OK, but we don't know anything about it.
           }
         }
-        rolesICanAdminister[thisOrganization] = mySubordinateRolesForThisOrg ;
+        rolesICanAdminister[thisOrganization] = mySubordinateRolesForThisOrg;
       }, this);
     }
 
@@ -197,7 +209,7 @@ class RoleHierarchy {
   /**
    * Get an object of all of the Meteor.user fields that the provided user can see
    * @param myUserObj the user object of the provided user, with a roles property
-   * @returns {object} an object of the format {orgName: [{field1: 1, field2: 2}], the values being Meteor.user field names that the provided user can see, suitable for inclusion 
+   * @returns {object} an object of the format {orgName: [{field1: 1, field2: 2}]}, the values being Meteor.user field names that the provided user can see, suitable for inclusion 
    * as a "fields" property in a mongodb Collection query.
    */
   getAllMyFieldsAsObject(myUserObj, startNode = this.root) {
@@ -208,8 +220,8 @@ class RoleHierarchy {
       myOrganizations = this._getOrganizationsForUser(myUserObj); // e.g. ["the app workshop","good life gym"]
       let rolesICanAdminister = this.getAllUserSubordinatesAsArray(myUserObj, startNode);
       // debug(`rolesICanAdminister = ${JSON.stringify(rolesICanAdminister)}`);
-      
-      myOrganizations.forEach((thisOrganization)=>{
+
+      myOrganizations.forEach((thisOrganization) => {
         let myRoles = RoleHierarchy._getRolesForUser(myUserObj, thisOrganization) || []; // e.g. ["manager"]
         // debug(`myRoles(${thisOrganization}) = ${JSON.stringify(myRoles)}`);
 
@@ -219,7 +231,7 @@ class RoleHierarchy {
         } else {
           allRolesICanSeeForThisOrg = myRoles;
         }
-        
+
         debug(`allRolesICanSeeForThisOrg(${thisOrganization}) = ${JSON.stringify(allRolesICanSeeForThisOrg)}`);
 
         let visibleUserFieldsForThisOrg = {};
@@ -229,7 +241,7 @@ class RoleHierarchy {
             // add this role
             var thisRoleObjInHierarchy = this._findNode(allRolesICanSeeForThisOrg[thisRole], startNode);
             if (thisRoleObjInHierarchy) {
-  
+
               debug(`thisRoleObjInHierarchy: ${JSON.stringify(thisRoleObjInHierarchy.model)}`);
 
               // add all of the visible user fields from this object in the hierarchy
@@ -240,7 +252,7 @@ class RoleHierarchy {
           }
         }
 
-        visibleUserFields[thisOrganization] = visibleUserFieldsForThisOrg ;
+        visibleUserFields[thisOrganization] = visibleUserFieldsForThisOrg;
         debug(`visibleUserFields = ${JSON.stringify(visibleUserFields, null, 2)}`);
       }, this);
     }

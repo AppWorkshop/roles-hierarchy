@@ -108,7 +108,7 @@ And a user :
 You can find information about the user's subordinates. 
 
 ```js
-let subordinatesMap = roleHierarchy.getAllUserSubordinatesAsArray(myUserObj);
+let subordinatesMap = roleHierarchy.getAllUserSubordinatesAsMap(myUserObj);
 /*
 {
         "springfield school": ["teacher", "student", "footballPlayer"],

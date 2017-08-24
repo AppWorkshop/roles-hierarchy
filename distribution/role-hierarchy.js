@@ -4,7 +4,17 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _hierarchy = require('./hierarchy');
+
+var _hierarchy2 = _interopRequireDefault(_hierarchy);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var winston = require('winston');
 process.env.SUPPRESS_NO_CONFIG_WARNING = 'y';
@@ -15,13 +25,14 @@ var _ = require('underscore');
 
 var _GLOBAL_GROUP = "__global_roles__";
 
-var RoleHierarchy = function () {
+var RoleHierarchy = function (_Hierarchy) {
+  _inherits(RoleHierarchy, _Hierarchy);
 
   /**
    * create a new instance of RoleHierarchy
-   * @param {Object} paramsObj containing a rolesHierarchy and a loggingConfig (optional) and a TreeModel config (optional):
+   * @param {Object} paramsObj containing a hierarchy and a loggingConfig (optional) and a TreeModel config (optional):
    * {
-   *   rolesHierarchy: {"name":"teacher", "subordinates": [ {"name":"student"} ]},
+   *   hierarchy: {"name":"teacher", "subordinates": [ {"name":"student"} ]},
    *   treeModelConfig: { "childrenPropertyName": "subordinates" },
    *   loggingConfig: { "level": "debug"}
    * }
@@ -29,27 +40,7 @@ var RoleHierarchy = function () {
   function RoleHierarchy(paramsObj) {
     _classCallCheck(this, RoleHierarchy);
 
-    // set up config defaults
-    var loggingConfig = paramsObj.loggingConfig || {
-      "level": "debug",
-      "timestamp": true,
-      "colorize": true
-    };
-
-    var treeModelConfig = paramsObj.treeModelConfig || { "childrenPropertyName": "subordinates" };
-
-    this.logger = new winston.Logger({
-      transports: [new winston.transports.Console(loggingConfig)]
-    });
-
-    // actual constructor stuff here.
-
-    // get treeModelConfig from config
-    // we need a clone of the treeModelConfig (it doesn't work straight from node-config)
-    treeModelConfig = JSON.parse(JSON.stringify(treeModelConfig));
-    this.treeModel = new TreeModel(treeModelConfig);
-    this.root = this.treeModel.parse(paramsObj.rolesHierarchy);
-    this.logger.debug(this.getTopiaryAsString(this.root.model));
+    return _possibleConstructorReturn(this, (RoleHierarchy.__proto__ || Object.getPrototypeOf(RoleHierarchy)).call(this, paramsObj));
   }
 
   /**
@@ -63,15 +54,13 @@ var RoleHierarchy = function () {
     value: function reparse(rolesHierarchy) {
       this.root = this.treeModel.parse(rolesHierarchy);
     }
-  }, {
-    key: '_findNode',
-    value: function _findNode(roleName) {
-      var startNode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.root;
 
-      return startNode.first({ strategy: 'breadth' }, function (node) {
-        return node.model.name === roleName;
-      });
-    }
+    /**
+     * Get the organizations that the user belongs to, as an array.
+     * @param {Object} myUserObj an object containing an organization or organizations property.
+     * @returns {Array<String>} an array of the organizations that the user belongs to.
+     */
+
   }, {
     key: '_getOrganizationsForUser',
     value: function _getOrganizationsForUser(myUserObj) {
@@ -110,15 +99,10 @@ var RoleHierarchy = function () {
     /**
      * Find a role in the hierarchy by name
      * @param {string} roleName - the name of the role to find
-     * @returns {*} - the node in the tree that matches
+     * @returns {object} - the node in the tree that matches
      */
     value: function findRoleInHierarchy(roleName, startNode) {
-      var result = this._findNode(roleName, startNode);
-      if (result && result.model) {
-        this.logger.debug('findRoleInHierarchy(' + roleName + ') => returning ' + JSON.stringify(result.model, null, 2));
-        return result.model;
-      }
-      this.logger.debug('findRoleInHierarchy(' + roleName + ') => returning undefined');
+      return this.findNodeInHierarchy(roleName, startNode);
     }
 
     /**
@@ -131,18 +115,7 @@ var RoleHierarchy = function () {
   }, {
     key: 'getRoleSubordinate',
     value: function getRoleSubordinate(seniorRoleName, subordinateRoleName, startNode) {
-      // get the node for the senior role name
-      var senior = this._findNode(seniorRoleName, startNode);
-      if (!senior) {
-        return false;
-      }
-      var junior = this._findNode(subordinateRoleName, senior);
-      if (junior) {
-        this.logger.debug('getRoleSubordinate(' + seniorRoleName + ',' + subordinateRoleName + ') => returning ' + JSON.stringify(junior.model, null, 2));
-        return junior.model;
-      } else {
-        this.logger.debug('getAllSubordinatesAsArray(' + seniorRoleName + ') => returning undefined');
-      }
+      return this.findDescendantNodeByName(seniorRoleName, subordinateRoleName, startNode);
     }
 
     /**
@@ -154,28 +127,18 @@ var RoleHierarchy = function () {
   }, {
     key: 'getAllSubordinateRolesAsArray',
     value: function getAllSubordinateRolesAsArray(seniorRoleName, startNode) {
-      // find the node for the given role name
-      var seniorRole = this._findNode(seniorRoleName, startNode);
-      // get all the nodes under this one
-      var result = seniorRole.all({ strategy: 'breadth' }, function (node) {
-        return node.model.name !== seniorRoleName;
-      }).map(function (item) {
-        // get the names of each node
-        return item.model.name;
-      });
-      this.logger.debug('getAllSubordinatesAsArray(' + seniorRoleName + ') => returning ' + JSON.stringify(result, null, 2));
-      return result;
+      return this.getAllDescendantNodesAsArray(seniorRoleName, startNode);
     }
 
     /**
-     * Get an array of all of the role names that the provided user can administer
+     * Get a map of all of the role names that the provided user can administer, grouped by organization
      * @param myUserObj the user object of the provided user, with a roles property and a profile.organization or profile.organizations
      * @returns {Object} an object of subordinate {organization:[roleName, roleName]} arrays that the provided user can administer
      */
 
   }, {
-    key: 'getAllUserSubordinatesAsArray',
-    value: function getAllUserSubordinatesAsArray(myUserObj) {
+    key: 'getAllUserSubordinatesAsMap',
+    value: function getAllUserSubordinatesAsMap(myUserObj) {
       var startNode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.root;
 
       var debug = this.logger.debug;
@@ -208,7 +171,7 @@ var RoleHierarchy = function () {
         }, this);
       }
 
-      debug('getAllUserSubordinatesAsArray(' + JSON.stringify(myUserObj) + ') => returning ' + JSON.stringify(rolesICanAdminister));
+      debug('getAllUserSubordinatesAsMap(' + JSON.stringify(myUserObj) + ') => returning ' + JSON.stringify(rolesICanAdminister));
       return rolesICanAdminister;
     }
 
@@ -222,7 +185,7 @@ var RoleHierarchy = function () {
   }, {
     key: 'getAllMyFieldsAsObject',
     value: function getAllMyFieldsAsObject(myUserObj) {
-      var _this = this;
+      var _this2 = this;
 
       var startNode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.root;
 
@@ -232,7 +195,7 @@ var RoleHierarchy = function () {
       // I might have a few roles.
       if (myUserObj) {
         myOrganizations = this._getOrganizationsForUser(myUserObj); // e.g. ["the app workshop","good life gym"]
-        var rolesICanAdminister = this.getAllUserSubordinatesAsArray(myUserObj, startNode);
+        var rolesICanAdminister = this.getAllUserSubordinatesAsMap(myUserObj, startNode);
         // debug(`rolesICanAdminister = ${JSON.stringify(rolesICanAdminister)}`);
 
         myOrganizations.forEach(function (thisOrganization) {
@@ -253,7 +216,7 @@ var RoleHierarchy = function () {
           for (var thisRole in allRolesICanSeeForThisOrg) {
             if (allRolesICanSeeForThisOrg.hasOwnProperty(thisRole)) {
               // add this role
-              var thisRoleObjInHierarchy = _this._findNode(allRolesICanSeeForThisOrg[thisRole], startNode);
+              var thisRoleObjInHierarchy = _this2._findNode(allRolesICanSeeForThisOrg[thisRole], startNode);
               if (thisRoleObjInHierarchy) {
 
                 debug('thisRoleObjInHierarchy: ' + JSON.stringify(thisRoleObjInHierarchy.model));
@@ -275,41 +238,137 @@ var RoleHierarchy = function () {
     }
 
     /**
-     * returns true if the given userId can administer the given role.
-     * @param myUserObj the user object of the provided user, with a roles property
+     * returns true if the given object is more senior than the given role in the given organization.
+     * @param myUserObj the user object of the provided user, with a roles property and an organization(s) property
      * @param roleName the name of the role to query
      * @param organizationName the name of the organization to query whether the user has the role
+     * @returns {boolean} true if the user is more senior than the given role
      */
 
   }, {
-    key: 'isUserCanAdministerRole',
-    value: function isUserCanAdministerRole(myUserObj, roleName, organizationName) {
+    key: 'isUserHasMoreSeniorRole',
+    value: function isUserHasMoreSeniorRole(myUserObj, roleName, organizationName) {
       var startNode = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : this.root;
 
-      var allSubordinateRoles = this.getAllUserSubordinatesAsArray(myUserObj, startNode);
+      var debug = this.logger.debug;
+
+      var orgSubordinates = this.getAllUserSubordinatesAsMap(myUserObj, startNode);
+      // orgSubordinates is of the format {organization:[roleName, roleName], org2: [roleName, roleName]}
+      if (orgSubordinates && orgSubordinates.hasOwnProperty(organizationName)) {
+        var ourOrgSubordinatesArr = orgSubordinates[organizationName];
+
+        // ourOrgSubordinatesArr is like ["manager","supervillain"]
+        if (ourOrgSubordinatesArr && ourOrgSubordinatesArr.length) {
+          var retVal = !!ourOrgSubordinatesArr.find(function (subordinateRoleName) {
+            return subordinateRoleName === roleName;
+          }, // this is the droid you're looking for.
+          this);
+          debug('isUserHasMoreSeniorRole(' + JSON.stringify(myUserObj) + ',' + roleName + ',' + organizationName + ') => returning ' + retVal);
+          return retVal;
+        }
+      }
+      debug('isUserHasMoreSeniorRole(' + JSON.stringify(myUserObj) + ',' + roleName + ',' + organizationName + ') => returning false');
+      return false;
     }
 
     /**
-     * returns true if the given adminId can administer the given userId.
-     * @param adminObj the user Object of the user we're checking, with roles property
-     * @param subordinateObj the user object of the subordinate to check (with roles property)
+     * returns true if the given senior user is higher in the hierarchy than the given subordinate user for the given organization.
+     * @param seniorUserObj the senior user we're checking, with roles property and organization(s) property
+     * @param subordinateUserObj the user we want to check see if they are subordinate to the senior user, with roles property and organization(s) property
+     * @param organizationName the name of the organization whose roles to check
+     * @returns {boolean} true if the subordinateUser is below seniorUser in the hierarchy for at least one organization in common.
      */
 
   }, {
-    key: 'isUserCanAdministerUserfunction',
-    value: function isUserCanAdministerUserfunction(adminObj, subordinateObj) {}
+    key: 'isUserDescendantOfUser',
+    value: function isUserDescendantOfUser(seniorUserObj, subordinateUserObj, organizationName) {
+      // 1. get the organizations and roles of the senior user. 
+      // 2. get the organizations and roles of the subordinate.
+      // 3. Get the roles that the senior user can administer for this org.
+      // 4. For each such role that the senior user can administer, see if the subordinate has one of these roles.
+
+      var debug = this.logger.debug;
+
+      var seniorRolesMap = seniorUserObj.roles; // { "justice league": ["admin","hero"], "yankees": ["member"], ... }
+      var subordinateRolesMap = subordinateUserObj.roles; // { "fsociety": ["unwitting leader","member"], "yankees": ["coach","member"], "freemasons": ["grand wizard"] }
+      var subordinateOrgs = _.keys(subordinateOrgs); // ["fsociety", "freemasons", "yankees"]
+
+      if (!seniorRolesMap.hasOwnProperty(organizationName) || !subordinateRolesMap.hasOwnProperty(organizationName)) {
+        // one of our users doesn't know anything about the organization
+        return false;
+      }
+      var seniorsSubordinatesMap = this.getAllUserSubordinatesAsMap(seniorUserObj); // { "justice league": ["hero","janitor"] } -> note the user doesn't necessarily HAVE all of these roles
+      // find the senior user'ss subordinate roles for this org
+      if (!seniorsSubordinatesMap.hasOwnProperty(organizationName)) {
+        // no subordinate roles at all for this user in this org
+        return false;
+      }
+
+      var seniorsSubordinateRolesForOrg = seniorsSubordinatesMap[organizationName]; // ["hero","janitor"];
+      var subordinateRolesForOrg = subordinateRolesMap[organizationName]; // ["hero"];
+      if (!seniorsSubordinateRolesForOrg || !seniorsSubordinateRolesForOrg.length) {
+        // no subordinate roles in this org for this user
+        return false;
+      }
+      if (!subordinateRolesForOrg || !subordinateRolesForOrg.length) {
+        // no roles in this org for this user
+        return false;
+      }
+
+      // see if there's any intersection between the roles the senior can administer for this org and the roles the subordinate has for this org.
+      var inCommon = _.intersection(seniorsSubordinateRolesForOrg, subordinateRolesForOrg);
+      debug('isUserDescendantOfUser(' + JSON.stringify(seniorUserObj) + ',' + JSON.stringify(subordinateUserObj) + ',' + organizationName + ') => returning ' + inCommon);
+      return inCommon && inCommon.length;
+    }
 
     /**
-     * Copy the given user's profile properties (as specified in RolesTree) as query criteria.
+     * Copy the given user's profile properties (as specified in roles hierarchy as profileFilters) as profile properties suitable for adding to a new user.
      * @param {object} userWithProfile - the user object, with a profile property to copy
      * @param {object} profileFilterCriteria - existing profileFilterCriteria. Note that if any properties are already specified, they may
      *  get overwritten.
-     * @returns {*} the query criteria to ensure only users with the same profile property values will be returned.
+     * @param {string} organizationName - the organization we're dealing with.
+     * @returns {object} the query criteria, suitable for mongodb, to ensure only users with the same values for the specified fields will be returned.
      */
 
   }, {
-    key: 'copyProfileCriteriaFromUser',
-    value: function copyProfileCriteriaFromUser(userWithProfile, profileFilterCriteria) {}
+    key: 'getProfileCriteriaFromUser',
+    value: function getProfileCriteriaFromUser(userWithProfile, profileFilterCriteria, organizationName) {
+      //TODO : copy profile filters from ALL more senior nodes in the hierarchy. As it is, we have to specify them at every level.
+      var debug = this.logger.debug;
+      var userRolesMap = userWithProfile.roles; // { "justice league": ["admin","hero"], "yankees": ["member"], ... }
+      if (!userRolesMap.hasOwnProperty(organizationName)) {
+        // Not much we can do.... 
+        return profileFilterCriteria;
+      }
+
+      var rolesArray = userRolesMap[organizationName]; // ["admin", "hero"]
+      for (var roleIndex in rolesArray) {
+        if (userWithProfile.profile && rolesArray.hasOwnProperty(roleIndex)) {
+          // find this role in the hierarchy
+          var thisRole = this.findRoleInHierarchy(rolesArray[roleIndex]);
+          // copy the profile filters
+          if (thisRole && thisRole.profileFilters) {
+            // it might not be in our hierarchy
+
+            // loop through the profile filters (if any)
+            for (var filterIndex in thisRole.profileFilters) {
+              if (thisRole.profileFilters.hasOwnProperty(filterIndex)) {
+                var thisProfileFilter = thisRole.profileFilters[filterIndex];
+                // a profile filter is an array of property names to copy from the user's profile
+                if (userWithProfile.profile.hasOwnProperty(thisProfileFilter)) {
+                  // OK let's copy it to our criteria
+                  profileFilterCriteria = profileFilterCriteria || {}; // initialize if needed.
+                  profileFilterCriteria["profile." + thisProfileFilter] = userWithProfile.profile[thisProfileFilter];
+                }
+              }
+            }
+          }
+        }
+      }
+      debug('getProfileCriteriaFromUser(' + JSON.stringify(userWithProfile) + ', ' + JSON.stringify(profileFilterCriteria) + ', ' + organizationName + ') => returning ' + JSON.stringify(profileFilterCriteria));
+
+      return profileFilterCriteria;
+    }
   }, {
     key: 'getTopiaryAsString',
     value: function getTopiaryAsString() {
@@ -348,6 +407,6 @@ var RoleHierarchy = function () {
   }]);
 
   return RoleHierarchy;
-}();
+}(_hierarchy2.default);
 
 module.exports = RoleHierarchy;

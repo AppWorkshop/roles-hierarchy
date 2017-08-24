@@ -2,6 +2,44 @@
 const assert = require('assert');
 const config = require('config');
 import RoleHierarchy from '..';
+import Hierarchy from '../distribution/hierarchy';
+
+describe('Hierarchy', function () {
+  let hierarchy;
+
+  it('get a new Hierarchy', function (done) {
+    hierarchy = new Hierarchy(
+      {
+        "hierarchy": config.get("rolesHierarchyConfig.rolesHierarchy"),
+        "loggingConfig": config.get("rolesHierarchyConfig.loggingConfig")
+      }
+    );
+    assert.ok(hierarchy);
+    done();
+  });
+
+  it('Find a node in the hierarchy', function (done) {
+    let teacher = hierarchy.findNodeInHierarchy("teacher");
+    assert.equal(teacher.name, "teacher", "Expected role name to be teacher");
+    done();
+  });
+
+  it('findDescendantNodeByName', function (done) {
+    let subordinate = hierarchy.findDescendantNodeByName('teacher', 'student');
+    assert.ok(subordinate, 'Expected to get a subordinate from teacher');
+    assert.equal(subordinate.name, 'student', 'Expected to get a student subordinate from teacher');
+    done();
+  });
+
+
+  it('getAllDescendantNodesAsArray', function (done) {
+    let subordinatesArray = hierarchy.getAllDescendantNodesAsArray('schoolAdmin');
+    assert.ok(subordinatesArray, 'Expected to get a subordinatesArray from schoolAdmin');
+    assert.deepEqual(subordinatesArray, ["teacher", "student"], "Expected ['teacher','student']");
+    done();
+  });
+});
+
 
 describe('RoleHierarchy', function () {
   let roleHierarchy;
@@ -9,7 +47,7 @@ describe('RoleHierarchy', function () {
   it('get a new RoleHierarchy', function (done) {
     roleHierarchy = new RoleHierarchy(
       {
-        "rolesHierarchy": config.get("rolesHierarchyConfig.rolesHierarchy"),
+        "hierarchy": config.get("rolesHierarchyConfig.rolesHierarchy"),
         "loggingConfig": config.get("rolesHierarchyConfig.loggingConfig")
       }
     );
@@ -41,7 +79,8 @@ describe('RoleHierarchy', function () {
   let myUserObj = {
     _id: 'abc123',
     profile: {
-      organizations: ['springfield school', 'springfield football team']
+      organizations: ['springfield school', 'springfield football team'],
+      school: 7
     },
     "roles": {
       "springfield school": [
@@ -69,9 +108,9 @@ describe('RoleHierarchy', function () {
     }
   };
 
-  it('getAllUserSubordinatesAsArray', function (done) {
-    let subordinatesMap = roleHierarchy.getAllUserSubordinatesAsArray(myUserObj)
-    assert.ok(subordinatesMap, 'Expected to get a subordinatesArray from schoolAdmin and footballCoach');
+  it('getAllUserSubordinatesAsMap', function (done) {
+    let subordinatesMap = roleHierarchy.getAllUserSubordinatesAsMap(myUserObj)
+    assert.ok(subordinatesMap, 'Expected to get a subordinatesMap from schoolAdmin and footballCoach');
     assert.deepEqual(subordinatesMap,
       {
         "springfield school": ["teacher", "student", "footballPlayer"],
@@ -105,10 +144,31 @@ describe('RoleHierarchy', function () {
         "roles": 1,
         "username": 1
       }
-  });
+    });
 
     done();
   });
+
+  it('isUserHasMoreSeniorRole', function (done) {
+    let result = roleHierarchy.isUserHasMoreSeniorRole(myUserObj,"student", "springfield school")
+    assert.ok(result, 'Expected to true');
+    done();
+  });
+
+  it('isUserDescendantOfUser', function (done) {
+    let result = roleHierarchy.isUserDescendantOfUser(myUserObj, myStudentObj, "springfield school");
+    assert.ok(result, 'Expected true');
+    result = roleHierarchy.isUserDescendantOfUser(myStudentObj,myUserObj, "springfield school"); // should be false
+    assert.equal(result, false, 'Expected false');
+    done();
+  });
+
+  it('getProfileCriteriaFromUser', function (done) {
+    let result = roleHierarchy.getProfileCriteriaFromUser(myUserObj, {}, "springfield school");
+    assert.deepEqual(result, {"profile.school": 7});
+    done();
+  });
+
 
 });
 

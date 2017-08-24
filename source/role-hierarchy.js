@@ -1,3 +1,5 @@
+import Hierarchy from './hierarchy';
+
 const winston = require('winston');
 process.env.SUPPRESS_NO_CONFIG_WARNING = 'y';
 const config = require('config');
@@ -7,42 +9,19 @@ const _ = require('underscore');
 
 const _GLOBAL_GROUP = "__global_roles__";
 
-class RoleHierarchy {
+class RoleHierarchy extends Hierarchy {
 
   /**
    * create a new instance of RoleHierarchy
-   * @param {Object} paramsObj containing a rolesHierarchy and a loggingConfig (optional) and a TreeModel config (optional):
+   * @param {Object} paramsObj containing a hierarchy and a loggingConfig (optional) and a TreeModel config (optional):
    * {
-   *   rolesHierarchy: {"name":"teacher", "subordinates": [ {"name":"student"} ]},
+   *   hierarchy: {"name":"teacher", "subordinates": [ {"name":"student"} ]},
    *   treeModelConfig: { "childrenPropertyName": "subordinates" },
    *   loggingConfig: { "level": "debug"}
    * }
    */
   constructor(paramsObj) {
-
-    // set up config defaults
-    let loggingConfig = paramsObj.loggingConfig || {
-      "level": "debug",
-      "timestamp": true,
-      "colorize": true
-    };
-
-    let treeModelConfig = paramsObj.treeModelConfig || { "childrenPropertyName": "subordinates" };
-
-    this.logger = new (winston.Logger)({
-      transports: [
-        new (winston.transports.Console)(loggingConfig)
-      ]
-    });
-
-    // actual constructor stuff here.
-
-    // get treeModelConfig from config
-    // we need a clone of the treeModelConfig (it doesn't work straight from node-config)
-    treeModelConfig = JSON.parse(JSON.stringify(treeModelConfig));
-    this.treeModel = new TreeModel(treeModelConfig);
-    this.root = this.treeModel.parse(paramsObj.rolesHierarchy);
-    this.logger.debug(this.getTopiaryAsString(this.root.model));
+    super(paramsObj);
   }
 
   /**
@@ -53,12 +32,11 @@ class RoleHierarchy {
     this.root = this.treeModel.parse(rolesHierarchy);
   }
 
-  _findNode(roleName, startNode = this.root) {
-    return startNode.first({ strategy: 'breadth' }, function (node) {
-      return node.model.name === roleName;
-    });
-  }
-
+  /**
+   * Get the organizations that the user belongs to, as an array.
+   * @param {Object} myUserObj an object containing an organization or organizations property.
+   * @returns {Array<String>} an array of the organizations that the user belongs to.
+   */
   _getOrganizationsForUser(myUserObj) {
     let myOrganizations = [];
     if (myUserObj) {
@@ -80,7 +58,7 @@ class RoleHierarchy {
   /**
    * Retrieve users roles
    * @param {Object} user user object
-   * @param {String} [group] Optional name of group to restrict roles to.
+   * @param {String} group Optional name of group to restrict roles to.
    *                         User's _GLOBAL_GROUP will also be included.
    * @return {Array} Array of user's roles, unsorted.
    */
@@ -115,16 +93,10 @@ class RoleHierarchy {
   /**
    * Find a role in the hierarchy by name
    * @param {string} roleName - the name of the role to find
-   * @returns {*} - the node in the tree that matches
+   * @returns {object} - the node in the tree that matches
    */
   findRoleInHierarchy(roleName, startNode) {
-    let result = this._findNode(roleName, startNode);
-    if (result && result.model) {
-      this.logger.debug(`findRoleInHierarchy(${roleName}) => returning ${JSON.stringify(result.model, null, 2)}`);
-      return result.model;
-    }
-    this.logger.debug(`findRoleInHierarchy(${roleName}) => returning undefined`);
-
+    return this.findNodeInHierarchy(roleName, startNode);
   }
 
   /**
@@ -134,18 +106,7 @@ class RoleHierarchy {
    * @returns {object} - the role of the subordinate, or false if not found.
    */
   getRoleSubordinate(seniorRoleName, subordinateRoleName, startNode) {
-    // get the node for the senior role name
-    let senior = this._findNode(seniorRoleName, startNode);
-    if (!senior) {
-      return false;
-    }
-    let junior = this._findNode(subordinateRoleName, senior);
-    if (junior) {
-      this.logger.debug(`getRoleSubordinate(${seniorRoleName},${subordinateRoleName}) => returning ${JSON.stringify(junior.model, null, 2)}`);
-      return junior.model;
-    } else {
-      this.logger.debug(`getAllSubordinatesAsArray(${seniorRoleName}) => returning undefined`);
-    }
+    return this.findDescendantNodeByName(seniorRoleName, subordinateRoleName, startNode);
   }
 
   /**
@@ -154,24 +115,15 @@ class RoleHierarchy {
    * @returns {Array} - the subordinate role names if any, otherwise undefined.
    */
   getAllSubordinateRolesAsArray(seniorRoleName, startNode) {
-    // find the node for the given role name
-    let seniorRole = this._findNode(seniorRoleName, startNode);
-    // get all the nodes under this one
-    let result = seniorRole.all({ strategy: 'breadth' }, function (node) {
-      return node.model.name !== seniorRoleName;
-    }).map((item) => { // get the names of each node
-      return item.model.name;
-    });
-    this.logger.debug(`getAllSubordinatesAsArray(${seniorRoleName}) => returning ${JSON.stringify(result, null, 2)}`);
-    return result;
+    return this.getAllDescendantNodesAsArray(seniorRoleName, startNode);
   }
 
   /**
-   * Get an array of all of the role names that the provided user can administer
+   * Get a map of all of the role names that the provided user can administer, grouped by organization
    * @param myUserObj the user object of the provided user, with a roles property and a profile.organization or profile.organizations
    * @returns {Object} an object of subordinate {organization:[roleName, roleName]} arrays that the provided user can administer
    */
-  getAllUserSubordinatesAsArray(myUserObj, startNode = this.root) {
+  getAllUserSubordinatesAsMap(myUserObj, startNode = this.root) {
     let debug = this.logger.debug;
     let rolesICanAdminister = {}, myOrganizations = [];
     // I might have a few roles, and a few organizations.
@@ -201,7 +153,7 @@ class RoleHierarchy {
       }, this);
     }
 
-    debug(`getAllUserSubordinatesAsArray(${JSON.stringify(myUserObj)}) => returning ${JSON.stringify(rolesICanAdminister)}`);
+    debug(`getAllUserSubordinatesAsMap(${JSON.stringify(myUserObj)}) => returning ${JSON.stringify(rolesICanAdminister)}`);
     return rolesICanAdminister;
   }
 
@@ -218,7 +170,7 @@ class RoleHierarchy {
     // I might have a few roles.
     if (myUserObj) {
       myOrganizations = this._getOrganizationsForUser(myUserObj); // e.g. ["the app workshop","good life gym"]
-      let rolesICanAdminister = this.getAllUserSubordinatesAsArray(myUserObj, startNode);
+      let rolesICanAdminister = this.getAllUserSubordinatesAsMap(myUserObj, startNode);
       // debug(`rolesICanAdminister = ${JSON.stringify(rolesICanAdminister)}`);
 
       myOrganizations.forEach((thisOrganization) => {
@@ -262,30 +214,122 @@ class RoleHierarchy {
   }
 
   /**
-   * returns true if the given userId can administer the given role.
-   * @param myUserObj the user object of the provided user, with a roles property
+   * returns true if the given object is more senior than the given role in the given organization.
+   * @param myUserObj the user object of the provided user, with a roles property and an organization(s) property
    * @param roleName the name of the role to query
    * @param organizationName the name of the organization to query whether the user has the role
+   * @returns {boolean} true if the user is more senior than the given role
    */
-  isUserCanAdministerRole(myUserObj, roleName, organizationName, startNode = this.root) {
-    var allSubordinateRoles = this.getAllUserSubordinatesAsArray(myUserObj, startNode);
+  isUserHasMoreSeniorRole(myUserObj, roleName, organizationName, startNode = this.root) {
+    let debug = this.logger.debug;    
+
+    var orgSubordinates = this.getAllUserSubordinatesAsMap(myUserObj, startNode);
+    // orgSubordinates is of the format {organization:[roleName, roleName], org2: [roleName, roleName]}
+    if (orgSubordinates && orgSubordinates.hasOwnProperty(organizationName)) {
+      let ourOrgSubordinatesArr = orgSubordinates[organizationName];
+
+      // ourOrgSubordinatesArr is like ["manager","supervillain"]
+      if (ourOrgSubordinatesArr && ourOrgSubordinatesArr.length) {
+        let retVal = !!(ourOrgSubordinatesArr.find(
+          (subordinateRoleName)=>{ return subordinateRoleName === roleName;}, // this is the droid you're looking for.
+          this));
+        debug(`isUserHasMoreSeniorRole(${JSON.stringify(myUserObj)},${roleName},${organizationName}) => returning ${retVal}`);          
+        return retVal;
+      }
+    }
+    debug(`isUserHasMoreSeniorRole(${JSON.stringify(myUserObj)},${roleName},${organizationName}) => returning false`);          
+    return false;
   }
 
   /**
-   * returns true if the given adminId can administer the given userId.
-   * @param adminObj the user Object of the user we're checking, with roles property
-   * @param subordinateObj the user object of the subordinate to check (with roles property)
+   * returns true if the given senior user is higher in the hierarchy than the given subordinate user for the given organization.
+   * @param seniorUserObj the senior user we're checking, with roles property and organization(s) property
+   * @param subordinateUserObj the user we want to check see if they are subordinate to the senior user, with roles property and organization(s) property
+   * @param organizationName the name of the organization whose roles to check
+   * @returns {boolean} true if the subordinateUser is below seniorUser in the hierarchy for at least one organization in common.
    */
-  isUserCanAdministerUserfunction(adminObj, subordinateObj) { }
+  isUserDescendantOfUser(seniorUserObj, subordinateUserObj, organizationName) { 
+    // 1. get the organizations and roles of the senior user. 
+    // 2. get the organizations and roles of the subordinate.
+    // 3. Get the roles that the senior user can administer for this org.
+    // 4. For each such role that the senior user can administer, see if the subordinate has one of these roles.
+
+    let debug = this.logger.debug;    
+
+    let seniorRolesMap = seniorUserObj.roles; // { "justice league": ["admin","hero"], "yankees": ["member"], ... }
+    let subordinateRolesMap = subordinateUserObj.roles; // { "fsociety": ["unwitting leader","member"], "yankees": ["coach","member"], "freemasons": ["grand wizard"] }
+    let subordinateOrgs = _.keys(subordinateOrgs); // ["fsociety", "freemasons", "yankees"]
+
+    if (!seniorRolesMap.hasOwnProperty(organizationName) || !subordinateRolesMap.hasOwnProperty(organizationName)) {
+      // one of our users doesn't know anything about the organization
+      return false;
+    }
+    let seniorsSubordinatesMap = this.getAllUserSubordinatesAsMap(seniorUserObj); // { "justice league": ["hero","janitor"] } -> note the user doesn't necessarily HAVE all of these roles
+    // find the senior user'ss subordinate roles for this org
+    if (!seniorsSubordinatesMap.hasOwnProperty(organizationName)) {
+      // no subordinate roles at all for this user in this org
+      return false;
+    }
+
+    let seniorsSubordinateRolesForOrg = seniorsSubordinatesMap[organizationName]; // ["hero","janitor"];
+    let subordinateRolesForOrg = subordinateRolesMap[organizationName]; // ["hero"];
+    if (!seniorsSubordinateRolesForOrg || !seniorsSubordinateRolesForOrg.length) { // no subordinate roles in this org for this user
+      return false;
+    }
+    if (!subordinateRolesForOrg || !subordinateRolesForOrg.length) { // no roles in this org for this user
+      return false;
+    }
+
+    // see if there's any intersection between the roles the senior can administer for this org and the roles the subordinate has for this org.
+    let inCommon = _.intersection(seniorsSubordinateRolesForOrg, subordinateRolesForOrg);
+    debug(`isUserDescendantOfUser(${JSON.stringify(seniorUserObj)},${JSON.stringify(subordinateUserObj)},${organizationName}) => returning ${inCommon}`);          
+    return (inCommon && inCommon.length);
+  }
 
   /**
-   * Copy the given user's profile properties (as specified in RolesTree) as query criteria.
+   * Copy the given user's profile properties (as specified in roles hierarchy as profileFilters) as profile properties suitable for adding to a new user.
    * @param {object} userWithProfile - the user object, with a profile property to copy
    * @param {object} profileFilterCriteria - existing profileFilterCriteria. Note that if any properties are already specified, they may
    *  get overwritten.
-   * @returns {*} the query criteria to ensure only users with the same profile property values will be returned.
+   * @param {string} organizationName - the organization we're dealing with.
+   * @returns {object} the query criteria, suitable for mongodb, to ensure only users with the same values for the specified fields will be returned.
    */
-  copyProfileCriteriaFromUser(userWithProfile, profileFilterCriteria) { }
+  getProfileCriteriaFromUser(userWithProfile, profileFilterCriteria, organizationName) {
+    //TODO : copy profile filters from ALL more senior nodes in the hierarchy. As it is, we have to specify them at every level.
+    let debug = this.logger.debug;    
+    let userRolesMap = userWithProfile.roles; // { "justice league": ["admin","hero"], "yankees": ["member"], ... }
+    if (!userRolesMap.hasOwnProperty(organizationName)) {
+      // Not much we can do.... 
+      return profileFilterCriteria;
+    }
+
+    var rolesArray = userRolesMap[organizationName]; // ["admin", "hero"]
+    for (var roleIndex in rolesArray) {
+      if (userWithProfile.profile && rolesArray.hasOwnProperty(roleIndex)) {
+        // find this role in the hierarchy
+        var thisRole = this.findRoleInHierarchy(rolesArray[roleIndex]);
+        // copy the profile filters
+        if (thisRole && thisRole.profileFilters) { // it might not be in our hierarchy
+
+          // loop through the profile filters (if any)
+          for (var filterIndex in thisRole.profileFilters) {
+            if (thisRole.profileFilters.hasOwnProperty(filterIndex)) {
+              var thisProfileFilter = thisRole.profileFilters[filterIndex];
+              // a profile filter is an array of property names to copy from the user's profile
+              if (userWithProfile.profile.hasOwnProperty(thisProfileFilter)) {
+                // OK let's copy it to our criteria
+                profileFilterCriteria = profileFilterCriteria || {}; // initialize if needed.
+                profileFilterCriteria["profile." + thisProfileFilter] = userWithProfile.profile[thisProfileFilter];
+              }
+            }
+          }
+        }
+      }
+    }
+    debug(`getProfileCriteriaFromUser(${JSON.stringify(userWithProfile)}, ${JSON.stringify(profileFilterCriteria)}, ${organizationName}) => returning ${JSON.stringify(profileFilterCriteria)}`);
+    
+    return profileFilterCriteria;
+  }
 
   getTopiaryAsString(hierarchy = this.root) {
     return topiary(hierarchy, 'subordinates');

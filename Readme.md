@@ -135,6 +135,85 @@ To run the tests, simply :
 ```npm test```
 
 ## API
+## Classes
+
+<dl>
+<dt><a href="#Hierarchy">Hierarchy</a></dt>
+<dd></dd>
+<dt><a href="#RoleHierarchy">RoleHierarchy</a></dt>
+<dd></dd>
+</dl>
+
+<a name="Hierarchy"></a>
+
+## Hierarchy
+**Kind**: global class
+
+* [Hierarchy](#Hierarchy)
+    * [new Hierarchy(paramsObj)](#new_Hierarchy_new)
+    * [.reparse(hierarchy)](#Hierarchy+reparse)
+    * [.findNodeInHierarchy(nodeName)](#Hierarchy+findNodeInHierarchy) ⇒ <code>\*</code>
+    * [.findDescendantNodeByName(nodeName, descendantNodeName)](#Hierarchy+findDescendantNodeByName) ⇒ <code>object</code>
+    * [.getAllDescendantNodesAsArray(nodeName)](#Hierarchy+getAllDescendantNodesAsArray) ⇒ <code>Array</code>
+
+<a name="new_Hierarchy_new"></a>
+
+### new Hierarchy(paramsObj)
+create a new instance of Hierarchy
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| paramsObj | <code>Object</code> | containing a Hierarchy and a loggingConfig (optional) and a TreeModel config (optional): {   hierarchy: {"name":"teacher", "subordinates": [ {"name":"student"} ]},   treeModelConfig: { "childrenPropertyName": "subordinates" },   loggingConfig: { "level": "debug"} } |
+
+<a name="Hierarchy+reparse"></a>
+
+### hierarchy.reparse(hierarchy)
+re-create the hierarchy with a new object structure.
+
+**Kind**: instance method of [<code>Hierarchy</code>](#Hierarchy)
+
+| Param | Type |
+| --- | --- |
+| hierarchy | <code>Object</code> |
+
+<a name="Hierarchy+findNodeInHierarchy"></a>
+
+### hierarchy.findNodeInHierarchy(nodeName) ⇒ <code>\*</code>
+Find a node in the hierarchy by name
+
+**Kind**: instance method of [<code>Hierarchy</code>](#Hierarchy)
+**Returns**: <code>\*</code> - - the node in the tree that matches
+
+| Param | Type | Description |
+| --- | --- | --- |
+| nodeName | <code>string</code> | the name of the node to find (i.e. 'name' property value) |
+
+<a name="Hierarchy+findDescendantNodeByName"></a>
+
+### hierarchy.findDescendantNodeByName(nodeName, descendantNodeName) ⇒ <code>object</code>
+Return the descendent node of the given nodeName if found.
+
+**Kind**: instance method of [<code>Hierarchy</code>](#Hierarchy)
+**Returns**: <code>object</code> - - the node of the descendant, or undefined or false if not found.
+
+| Param | Type | Description |
+| --- | --- | --- |
+| nodeName | <code>string</code> | the name of the node underneath which we should search |
+| descendantNodeName | <code>string</code> | the name of the descendant node to find |
+
+<a name="Hierarchy+getAllDescendantNodesAsArray"></a>
+
+### hierarchy.getAllDescendantNodesAsArray(nodeName) ⇒ <code>Array</code>
+Get the names of subordinate nodes as an array
+
+**Kind**: instance method of [<code>Hierarchy</code>](#Hierarchy)
+**Returns**: <code>Array</code> - - the subordinate node names if any, otherwise undefined.
+
+| Param | Type | Description |
+| --- | --- | --- |
+| nodeName | <code>string</code> | the name of the senior node i.e. 'name' property value |
+
 <a name="RoleHierarchy"></a>
 
 ## RoleHierarchy
@@ -144,14 +223,15 @@ To run the tests, simply :
     * [new RoleHierarchy(paramsObj)](#new_RoleHierarchy_new)
     * _instance_
         * [.reparse(rolesHierarchy)](#RoleHierarchy+reparse)
-        * [.findRoleInHierarchy(roleName)](#RoleHierarchy+findRoleInHierarchy) ⇒ <code>\*</code>
+        * [._getOrganizationsForUser(myUserObj)](#RoleHierarchy+_getOrganizationsForUser) ⇒ <code>Array.&lt;String&gt;</code>
+        * [.findRoleInHierarchy(roleName)](#RoleHierarchy+findRoleInHierarchy) ⇒ <code>object</code>
         * [.getRoleSubordinate(seniorRoleName, subordinateRoleName)](#RoleHierarchy+getRoleSubordinate) ⇒ <code>object</code>
         * [.getAllSubordinateRolesAsArray(seniorRoleName)](#RoleHierarchy+getAllSubordinateRolesAsArray) ⇒ <code>Array</code>
-        * [.getAllUserSubordinatesAsArray(myUserObj)](#RoleHierarchy+getAllUserSubordinatesAsArray) ⇒ <code>Object</code>
+        * [.getAllUserSubordinatesAsMap(myUserObj)](#RoleHierarchy+getAllUserSubordinatesAsMap) ⇒ <code>Object</code>
         * [.getAllMyFieldsAsObject(myUserObj)](#RoleHierarchy+getAllMyFieldsAsObject) ⇒ <code>object</code>
-        * [.isUserCanAdministerRole(myUserObj, roleName, organizationName)](#RoleHierarchy+isUserCanAdministerRole)
-        * [.isUserCanAdministerUserfunction(adminObj, subordinateObj)](#RoleHierarchy+isUserCanAdministerUserfunction)
-        * [.copyProfileCriteriaFromUser(userWithProfile, profileFilterCriteria)](#RoleHierarchy+copyProfileCriteriaFromUser) ⇒ <code>\*</code>
+        * [.isUserHasMoreSeniorRole(myUserObj, roleName, organizationName)](#RoleHierarchy+isUserHasMoreSeniorRole) ⇒ <code>boolean</code>
+        * [.isUserDescendantOfUser(seniorUserObj, subordinateUserObj, organizationName)](#RoleHierarchy+isUserDescendantOfUser) ⇒ <code>boolean</code>
+        * [.getProfileCriteriaFromUser(userWithProfile, profileFilterCriteria, organizationName)](#RoleHierarchy+getProfileCriteriaFromUser) ⇒ <code>object</code>
     * _static_
         * [._getRolesForUser(user, [group])](#RoleHierarchy._getRolesForUser) ⇒ <code>Array</code>
 
@@ -163,7 +243,7 @@ create a new instance of RoleHierarchy
 
 | Param | Type | Description |
 | --- | --- | --- |
-| paramsObj | <code>Object</code> | containing a rolesHierarchy and a loggingConfig (optional) and a TreeModel config (optional): {   rolesHierarchy: {"name":"teacher", "subordinates": [ {"name":"student"} ]},   treeModelConfig: { "childrenPropertyName": "subordinates" },   loggingConfig: { "level": "debug"} } |
+| paramsObj | <code>Object</code> | containing a hierarchy and a loggingConfig (optional) and a TreeModel config (optional): {   hierarchy: {"name":"teacher", "subordinates": [ {"name":"student"} ]},   treeModelConfig: { "childrenPropertyName": "subordinates" },   loggingConfig: { "level": "debug"} } |
 
 <a name="RoleHierarchy+reparse"></a>
 
@@ -176,13 +256,25 @@ re-create the hierarchy with a new object structure.
 | --- | --- |
 | rolesHierarchy | <code>Object</code> |
 
+<a name="RoleHierarchy+_getOrganizationsForUser"></a>
+
+### roleHierarchy._getOrganizationsForUser(myUserObj) ⇒ <code>Array.&lt;String&gt;</code>
+Get the organizations that the user belongs to, as an array.
+
+**Kind**: instance method of [<code>RoleHierarchy</code>](#RoleHierarchy)
+**Returns**: <code>Array.&lt;String&gt;</code> - an array of the organizations that the user belongs to.
+
+| Param | Type | Description |
+| --- | --- | --- |
+| myUserObj | <code>Object</code> | an object containing an organization or organizations property. |
+
 <a name="RoleHierarchy+findRoleInHierarchy"></a>
 
-### roleHierarchy.findRoleInHierarchy(roleName) ⇒ <code>\*</code>
+### roleHierarchy.findRoleInHierarchy(roleName) ⇒ <code>object</code>
 Find a role in the hierarchy by name
 
 **Kind**: instance method of [<code>RoleHierarchy</code>](#RoleHierarchy)
-**Returns**: <code>\*</code> - - the node in the tree that matches
+**Returns**: <code>object</code> - - the node in the tree that matches
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -213,10 +305,10 @@ Get the names of subordinate roles as an array
 | --- | --- | --- |
 | seniorRoleName | <code>string</code> | the name of the senior role |
 
-<a name="RoleHierarchy+getAllUserSubordinatesAsArray"></a>
+<a name="RoleHierarchy+getAllUserSubordinatesAsMap"></a>
 
-### roleHierarchy.getAllUserSubordinatesAsArray(myUserObj) ⇒ <code>Object</code>
-Get an array of all of the role names that the provided user can administer
+### roleHierarchy.getAllUserSubordinatesAsMap(myUserObj) ⇒ <code>Object</code>
+Get a map of all of the role names that the provided user can administer, grouped by organization
 
 **Kind**: instance method of [<code>RoleHierarchy</code>](#RoleHierarchy)
 **Returns**: <code>Object</code> - an object of subordinate {organization:[roleName, roleName]} arrays that the provided user can administer
@@ -238,43 +330,47 @@ as a "fields" property in a mongodb Collection query.
 | --- | --- |
 | myUserObj | the user object of the provided user, with a roles property |
 
-<a name="RoleHierarchy+isUserCanAdministerRole"></a>
+<a name="RoleHierarchy+isUserHasMoreSeniorRole"></a>
 
-### roleHierarchy.isUserCanAdministerRole(myUserObj, roleName, organizationName)
-returns true if the given userId can administer the given role.
+### roleHierarchy.isUserHasMoreSeniorRole(myUserObj, roleName, organizationName) ⇒ <code>boolean</code>
+returns true if the given object is more senior than the given role in the given organization.
 
 **Kind**: instance method of [<code>RoleHierarchy</code>](#RoleHierarchy)
+**Returns**: <code>boolean</code> - true if the user is more senior than the given role
 
 | Param | Description |
 | --- | --- |
-| myUserObj | the user object of the provided user, with a roles property |
+| myUserObj | the user object of the provided user, with a roles property and an organization(s) property |
 | roleName | the name of the role to query |
 | organizationName | the name of the organization to query whether the user has the role |
 
-<a name="RoleHierarchy+isUserCanAdministerUserfunction"></a>
+<a name="RoleHierarchy+isUserDescendantOfUser"></a>
 
-### roleHierarchy.isUserCanAdministerUserfunction(adminObj, subordinateObj)
-returns true if the given adminId can administer the given userId.
+### roleHierarchy.isUserDescendantOfUser(seniorUserObj, subordinateUserObj, organizationName) ⇒ <code>boolean</code>
+returns true if the given senior user is higher in the hierarchy than the given subordinate user for the given organization.
 
 **Kind**: instance method of [<code>RoleHierarchy</code>](#RoleHierarchy)
+**Returns**: <code>boolean</code> - true if the subordinateUser is below seniorUser in the hierarchy for at least one organization in common.
 
 | Param | Description |
 | --- | --- |
-| adminObj | the user Object of the user we're checking, with roles property |
-| subordinateObj | the user object of the subordinate to check (with roles property) |
+| seniorUserObj | the senior user we're checking, with roles property and organization(s) property |
+| subordinateUserObj | the user we want to check see if they are subordinate to the senior user, with roles property and organization(s) property |
+| organizationName | the name of the organization whose roles to check |
 
-<a name="RoleHierarchy+copyProfileCriteriaFromUser"></a>
+<a name="RoleHierarchy+getProfileCriteriaFromUser"></a>
 
-### roleHierarchy.copyProfileCriteriaFromUser(userWithProfile, profileFilterCriteria) ⇒ <code>\*</code>
-Copy the given user's profile properties (as specified in RolesTree) as query criteria.
+### roleHierarchy.getProfileCriteriaFromUser(userWithProfile, profileFilterCriteria, organizationName) ⇒ <code>object</code>
+Copy the given user's profile properties (as specified in roles hierarchy as profileFilters) as profile properties suitable for adding to a new user.
 
 **Kind**: instance method of [<code>RoleHierarchy</code>](#RoleHierarchy)
-**Returns**: <code>\*</code> - the query criteria to ensure only users with the same profile property values will be returned.
+**Returns**: <code>object</code> - the query criteria, suitable for mongodb, to ensure only users with the same values for the specified fields will be returned.
 
 | Param | Type | Description |
 | --- | --- | --- |
 | userWithProfile | <code>object</code> | the user object, with a profile property to copy |
 | profileFilterCriteria | <code>object</code> | existing profileFilterCriteria. Note that if any properties are already specified, they may  get overwritten. |
+| organizationName | <code>string</code> | the organization we're dealing with. |
 
 <a name="RoleHierarchy._getRolesForUser"></a>
 
@@ -287,4 +383,4 @@ Retrieve users roles
 | Param | Type | Description |
 | --- | --- | --- |
 | user | <code>Object</code> | user object |
-| [group] | <code>String</code> | Optional name of group to restrict roles to.                         User's _GLOBAL_GROUP will also be included. |
+| group | <code>String</code> | Optional name of group to restrict roles to.                         User's _GLOBAL_GROUP will also be included. |

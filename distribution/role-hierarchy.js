@@ -4,9 +4,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _hierarchy = require('./hierarchy');
+var _hierarchyModel = require('hierarchy-model');
 
-var _hierarchy2 = _interopRequireDefault(_hierarchy);
+var _hierarchyModel2 = _interopRequireDefault(_hierarchyModel);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -87,7 +87,7 @@ var RoleHierarchy = function (_Hierarchy) {
     /**
      * Retrieve users roles
      * @param {Object} user user object
-     * @param {String} [group] Optional name of group to restrict roles to.
+     * @param {String} group Optional name of group to restrict roles to.
      *                         User's _GLOBAL_GROUP will also be included.
      * @return {Array} Array of user's roles, unsorted.
      */
@@ -407,6 +407,6 @@ var RoleHierarchy = function (_Hierarchy) {
   }]);
 
   return RoleHierarchy;
-}(_hierarchy2.default);
+}(_hierarchyModel2.default);
 
 module.exports = RoleHierarchy;

@@ -1,4 +1,4 @@
-import Hierarchy from './hierarchy';
+import Hierarchy from 'hierarchy-model';
 
 const winston = require('winston');
 process.env.SUPPRESS_NO_CONFIG_WARNING = 'y';

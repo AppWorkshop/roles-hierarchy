@@ -2,44 +2,6 @@
 const assert = require('assert');
 const config = require('config');
 import RoleHierarchy from '..';
-import Hierarchy from '../distribution/hierarchy';
-
-describe('Hierarchy', function () {
-  let hierarchy;
-
-  it('get a new Hierarchy', function (done) {
-    hierarchy = new Hierarchy(
-      {
-        "hierarchy": config.get("rolesHierarchyConfig.rolesHierarchy"),
-        "loggingConfig": config.get("rolesHierarchyConfig.loggingConfig")
-      }
-    );
-    assert.ok(hierarchy);
-    done();
-  });
-
-  it('Find a node in the hierarchy', function (done) {
-    let teacher = hierarchy.findNodeInHierarchy("teacher");
-    assert.equal(teacher.name, "teacher", "Expected role name to be teacher");
-    done();
-  });
-
-  it('findDescendantNodeByName', function (done) {
-    let subordinate = hierarchy.findDescendantNodeByName('teacher', 'student');
-    assert.ok(subordinate, 'Expected to get a subordinate from teacher');
-    assert.equal(subordinate.name, 'student', 'Expected to get a student subordinate from teacher');
-    done();
-  });
-
-
-  it('getAllDescendantNodesAsArray', function (done) {
-    let subordinatesArray = hierarchy.getAllDescendantNodesAsArray('schoolAdmin');
-    assert.ok(subordinatesArray, 'Expected to get a subordinatesArray from schoolAdmin');
-    assert.deepEqual(subordinatesArray, ["teacher", "student"], "Expected ['teacher','student']");
-    done();
-  });
-});
-
 
 describe('RoleHierarchy', function () {
   let roleHierarchy;

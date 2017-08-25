@@ -135,84 +135,8 @@ To run the tests, simply :
 ```npm test```
 
 ## API
-## Classes
 
-<dl>
-<dt><a href="#Hierarchy">Hierarchy</a></dt>
-<dd></dd>
-<dt><a href="#RoleHierarchy">RoleHierarchy</a></dt>
-<dd></dd>
-</dl>
-
-<a name="Hierarchy"></a>
-
-## Hierarchy
-**Kind**: global class
-
-* [Hierarchy](#Hierarchy)
-    * [new Hierarchy(paramsObj)](#new_Hierarchy_new)
-    * [.reparse(hierarchy)](#Hierarchy+reparse)
-    * [.findNodeInHierarchy(nodeName)](#Hierarchy+findNodeInHierarchy) ⇒ <code>\*</code>
-    * [.findDescendantNodeByName(nodeName, descendantNodeName)](#Hierarchy+findDescendantNodeByName) ⇒ <code>object</code>
-    * [.getAllDescendantNodesAsArray(nodeName)](#Hierarchy+getAllDescendantNodesAsArray) ⇒ <code>Array</code>
-
-<a name="new_Hierarchy_new"></a>
-
-### new Hierarchy(paramsObj)
-create a new instance of Hierarchy
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| paramsObj | <code>Object</code> | containing a Hierarchy and a loggingConfig (optional) and a TreeModel config (optional): {   hierarchy: {"name":"teacher", "subordinates": [ {"name":"student"} ]},   treeModelConfig: { "childrenPropertyName": "subordinates" },   loggingConfig: { "level": "debug"} } |
-
-<a name="Hierarchy+reparse"></a>
-
-### hierarchy.reparse(hierarchy)
-re-create the hierarchy with a new object structure.
-
-**Kind**: instance method of [<code>Hierarchy</code>](#Hierarchy)
-
-| Param | Type |
-| --- | --- |
-| hierarchy | <code>Object</code> |
-
-<a name="Hierarchy+findNodeInHierarchy"></a>
-
-### hierarchy.findNodeInHierarchy(nodeName) ⇒ <code>\*</code>
-Find a node in the hierarchy by name
-
-**Kind**: instance method of [<code>Hierarchy</code>](#Hierarchy)
-**Returns**: <code>\*</code> - - the node in the tree that matches
-
-| Param | Type | Description |
-| --- | --- | --- |
-| nodeName | <code>string</code> | the name of the node to find (i.e. 'name' property value) |
-
-<a name="Hierarchy+findDescendantNodeByName"></a>
-
-### hierarchy.findDescendantNodeByName(nodeName, descendantNodeName) ⇒ <code>object</code>
-Return the descendent node of the given nodeName if found.
-
-**Kind**: instance method of [<code>Hierarchy</code>](#Hierarchy)
-**Returns**: <code>object</code> - - the node of the descendant, or undefined or false if not found.
-
-| Param | Type | Description |
-| --- | --- | --- |
-| nodeName | <code>string</code> | the name of the node underneath which we should search |
-| descendantNodeName | <code>string</code> | the name of the descendant node to find |
-
-<a name="Hierarchy+getAllDescendantNodesAsArray"></a>
-
-### hierarchy.getAllDescendantNodesAsArray(nodeName) ⇒ <code>Array</code>
-Get the names of subordinate nodes as an array
-
-**Kind**: instance method of [<code>Hierarchy</code>](#Hierarchy)
-**Returns**: <code>Array</code> - - the subordinate node names if any, otherwise undefined.
-
-| Param | Type | Description |
-| --- | --- | --- |
-| nodeName | <code>string</code> | the name of the senior node i.e. 'name' property value |
+docs generated with jsdoc2md
 
 <a name="RoleHierarchy"></a>
 
@@ -233,7 +157,7 @@ Get the names of subordinate nodes as an array
         * [.isUserDescendantOfUser(seniorUserObj, subordinateUserObj, organizationName)](#RoleHierarchy+isUserDescendantOfUser) ⇒ <code>boolean</code>
         * [.getProfileCriteriaFromUser(userWithProfile, profileFilterCriteria, organizationName)](#RoleHierarchy+getProfileCriteriaFromUser) ⇒ <code>object</code>
     * _static_
-        * [._getRolesForUser(user, [group])](#RoleHierarchy._getRolesForUser) ⇒ <code>Array</code>
+        * [._getRolesForUser(user, group)](#RoleHierarchy._getRolesForUser) ⇒ <code>Array</code>
 
 <a name="new_RoleHierarchy_new"></a>
 
@@ -243,7 +167,7 @@ create a new instance of RoleHierarchy
 
 | Param | Type | Description |
 | --- | --- | --- |
-| paramsObj | <code>Object</code> | containing a hierarchy and a loggingConfig (optional) and a TreeModel config (optional): {   hierarchy: {"name":"teacher", "subordinates": [ {"name":"student"} ]},   treeModelConfig: { "childrenPropertyName": "subordinates" },   loggingConfig: { "level": "debug"} } |
+| paramsObj | <code>Object</code> | containing a hierarchy and a loggingConfig (optional) and a TreeModel config (optional): {   hierarchy: {"name":"teacher", "subordinates": [ {"name":"student"} ]},   treeModelConfig: { "childrenPropertyName": "subordinates" },   loggingConfig: { "level": "debug"}} |
 
 <a name="RoleHierarchy+reparse"></a>
 
@@ -374,7 +298,7 @@ Copy the given user's profile properties (as specified in roles hierarchy as pro
 
 <a name="RoleHierarchy._getRolesForUser"></a>
 
-### RoleHierarchy._getRolesForUser(user, [group]) ⇒ <code>Array</code>
+### RoleHierarchy._getRolesForUser(user, group) ⇒ <code>Array</code>
 Retrieve users roles
 
 **Kind**: static method of [<code>RoleHierarchy</code>](#RoleHierarchy)

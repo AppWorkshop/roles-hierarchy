@@ -330,9 +330,6 @@ class RoleHierarchy extends Hierarchy {
     return profileFilterCriteria;
   }
 
-  getTopiaryAsString(hierarchy = this.root) {
-    return topiary(hierarchy, 'subordinates');
-  }
 }
 
 module.exports = RoleHierarchy;

@@ -10,7 +10,8 @@ describe('RoleHierarchy', function () {
     roleHierarchy = new RoleHierarchy(
       {
         "hierarchy": config.get("rolesHierarchyConfig.rolesHierarchy"),
-        "loggingConfig": config.get("rolesHierarchyConfig.loggingConfig")
+        "loggingConfig": config.get("rolesHierarchyConfig.loggingConfig"),
+        "treeModelConfig": config.get("rolesHierarchyConfig.treeModelConfig")
       }
     );
     assert.ok(roleHierarchy);

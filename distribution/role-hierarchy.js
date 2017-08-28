@@ -368,13 +368,6 @@ var RoleHierarchy = function (_Hierarchy) {
 
       return profileFilterCriteria;
     }
-  }, {
-    key: 'getTopiaryAsString',
-    value: function getTopiaryAsString() {
-      var hierarchy = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.root;
-
-      return topiary(hierarchy, 'subordinates');
-    }
   }], [{
     key: '_getRolesForUser',
     value: function _getRolesForUser(user, group) {

@@ -2,7 +2,6 @@ import Hierarchy from 'hierarchy-model';
 
 const winston = require('winston');
 process.env.SUPPRESS_NO_CONFIG_WARNING = 'y';
-const config = require('config');
 const TreeModel = require('tree-model');
 const topiary = require('topiary');
 const _ = require('underscore');

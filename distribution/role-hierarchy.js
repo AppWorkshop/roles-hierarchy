@@ -18,7 +18,6 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var winston = require('winston');
 process.env.SUPPRESS_NO_CONFIG_WARNING = 'y';
-var config = require('config');
 var TreeModel = require('tree-model');
 var topiary = require('topiary');
 var _ = require('underscore');

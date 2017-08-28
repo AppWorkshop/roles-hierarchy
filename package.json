@@ -1,6 +1,6 @@
 {
   "name": "role-hierarchy",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A data model for a hierarchy of roles, suitable for mongodb users or meteor",
   "main": "./distribution/role-hierarchy.js",
   "scripts": {

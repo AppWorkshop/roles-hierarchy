@@ -147,7 +147,7 @@ docs generated with jsdoc2md
     * [new RoleHierarchy(paramsObj)](#new_RoleHierarchy_new)
     * _instance_
         * [.reparse(rolesHierarchy)](#RoleHierarchy+reparse)
-        * [._getOrganizationsForUser(myUserObj)](#RoleHierarchy+_getOrganizationsForUser) ⇒ <code>Array.&lt;String&gt;</code>
+        * [._getOrganizationsForUser(myUserObj)](#RoleHierarchy+_getOrganizationsForUser)
         * [.findRoleInHierarchy(roleName)](#RoleHierarchy+findRoleInHierarchy) ⇒ <code>object</code>
         * [.getRoleSubordinate(seniorRoleName, subordinateRoleName)](#RoleHierarchy+getRoleSubordinate) ⇒ <code>object</code>
         * [.getAllSubordinateRolesAsArray(seniorRoleName)](#RoleHierarchy+getAllSubordinateRolesAsArray) ⇒ <code>Array</code>
@@ -157,7 +157,9 @@ docs generated with jsdoc2md
         * [.isUserDescendantOfUser(seniorUserObj, subordinateUserObj, organizationName)](#RoleHierarchy+isUserDescendantOfUser) ⇒ <code>boolean</code>
         * [.getProfileCriteriaFromUser(userWithProfile, profileFilterCriteria, organizationName)](#RoleHierarchy+getProfileCriteriaFromUser) ⇒ <code>object</code>
     * _static_
-        * [._getRolesForUser(user, group)](#RoleHierarchy._getRolesForUser) ⇒ <code>Array</code>
+        * [.getOrganizationsForUser(myUserObj)](#RoleHierarchy.getOrganizationsForUser) ⇒ <code>Array.&lt;String&gt;</code>
+        * [.getRolesForUser(user, organization)](#RoleHierarchy.getRolesForUser) ⇒ <code>Array</code>
+        * [._getRolesForUser(user, organization)](#RoleHierarchy._getRolesForUser)
 
 <a name="new_RoleHierarchy_new"></a>
 
@@ -182,15 +184,14 @@ re-create the hierarchy with a new object structure.
 
 <a name="RoleHierarchy+_getOrganizationsForUser"></a>
 
-### roleHierarchy._getOrganizationsForUser(myUserObj) ⇒ <code>Array.&lt;String&gt;</code>
-Get the organizations that the user belongs to, as an array.
+### roleHierarchy._getOrganizationsForUser(myUserObj)
+Deprecated - use RoleHierarchy.getOrganizationsForUser instead.
 
 **Kind**: instance method of [<code>RoleHierarchy</code>](#RoleHierarchy)
-**Returns**: <code>Array.&lt;String&gt;</code> - an array of the organizations that the user belongs to.
 
-| Param | Type | Description |
-| --- | --- | --- |
-| myUserObj | <code>Object</code> | an object containing an organization or organizations property. |
+| Param | Type |
+| --- | --- |
+| myUserObj | <code>\*</code> |
 
 <a name="RoleHierarchy+findRoleInHierarchy"></a>
 
@@ -296,9 +297,21 @@ Copy the given user's profile properties (as specified in roles hierarchy as pro
 | profileFilterCriteria | <code>object</code> | existing profileFilterCriteria. Note that if any properties are already specified, they may  get overwritten. |
 | organizationName | <code>string</code> | the organization we're dealing with. |
 
-<a name="RoleHierarchy._getRolesForUser"></a>
+<a name="RoleHierarchy.getOrganizationsForUser"></a>
 
-### RoleHierarchy._getRolesForUser(user, group) ⇒ <code>Array</code>
+### RoleHierarchy.getOrganizationsForUser(myUserObj) ⇒ <code>Array.&lt;String&gt;</code>
+Get the organizations that the user belongs to, as an array.
+
+**Kind**: static method of [<code>RoleHierarchy</code>](#RoleHierarchy)
+**Returns**: <code>Array.&lt;String&gt;</code> - an array of the organizations that the user belongs to.
+
+| Param | Type | Description |
+| --- | --- | --- |
+| myUserObj | <code>Object</code> | an object containing an organization or organizations property. |
+
+<a name="RoleHierarchy.getRolesForUser"></a>
+
+### RoleHierarchy.getRolesForUser(user, organization) ⇒ <code>Array</code>
 Retrieve users roles
 
 **Kind**: static method of [<code>RoleHierarchy</code>](#RoleHierarchy)
@@ -307,4 +320,16 @@ Retrieve users roles
 | Param | Type | Description |
 | --- | --- | --- |
 | user | <code>Object</code> | user object |
-| group | <code>String</code> | Optional name of group to restrict roles to.                         User's _GLOBAL_GROUP will also be included. |
+| organization | <code>String</code> | Optional name of organization to restrict roles to.                         User's _GLOBAL_GROUP will also be included. |
+
+<a name="RoleHierarchy._getRolesForUser"></a>
+
+### RoleHierarchy._getRolesForUser(user, organization)
+Deprecated. Use RoleHierarchy.getRolesForUser instead.
+
+**Kind**: static method of [<code>RoleHierarchy</code>](#RoleHierarchy)
+
+| Param | Type |
+| --- | --- |
+| user | <code>\*</code> |
+| organization | <code>\*</code> |

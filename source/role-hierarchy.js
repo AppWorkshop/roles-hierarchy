@@ -97,21 +97,21 @@ class RoleHierarchy extends Hierarchy {
   /**
    * Retrieve users roles
    * @param {Object} user user object
-   * @param {String} group Optional name of group to restrict roles to.
+   * @param {String} organization Optional name of organization to restrict roles to.
    *                         User's _GLOBAL_GROUP will also be included.
    * @return {Array} Array of user's roles, unsorted.
    */
-  static getRolesForUser(user, group) {
-    return _getRolesForUser(user, group);
+  static getRolesForUser(user, organization) {
+    return _getRolesForUser(user, organization);
   }
   
   /**
    * Deprecated. Use RoleHierarchy.getRolesForUser instead.
    * @param {*} user 
-   * @param {*} group 
+   * @param {*} organization 
    */
-  static _getRolesForUser(user, group) {
-    return _getRolesForUser(user, group);
+  static _getRolesForUser(user, organization) {
+    return _getRolesForUser(user, organization);
   }
 
   /**

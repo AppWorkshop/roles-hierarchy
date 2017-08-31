@@ -123,7 +123,7 @@ var RoleHierarchy = function (_Hierarchy) {
     /**
      * Retrieve users roles
      * @param {Object} user user object
-     * @param {String} group Optional name of group to restrict roles to.
+     * @param {String} organization Optional name of organization to restrict roles to.
      *                         User's _GLOBAL_GROUP will also be included.
      * @return {Array} Array of user's roles, unsorted.
      */
@@ -412,20 +412,20 @@ var RoleHierarchy = function (_Hierarchy) {
     }
   }, {
     key: 'getRolesForUser',
-    value: function getRolesForUser(user, group) {
-      return _getRolesForUser2(user, group);
+    value: function getRolesForUser(user, organization) {
+      return _getRolesForUser2(user, organization);
     }
 
     /**
      * Deprecated. Use RoleHierarchy.getRolesForUser instead.
      * @param {*} user 
-     * @param {*} group 
+     * @param {*} organization 
      */
 
   }, {
     key: '_getRolesForUser',
-    value: function _getRolesForUser(user, group) {
-      return _getRolesForUser2(user, group);
+    value: function _getRolesForUser(user, organization) {
+      return _getRolesForUser2(user, organization);
     }
   }]);
 

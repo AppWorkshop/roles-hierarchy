@@ -1,8 +1,8 @@
 'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _hierarchyModel = require('hierarchy-model');
 
@@ -23,6 +23,54 @@ var topiary = require('topiary');
 var _ = require('underscore');
 
 var _GLOBAL_GROUP = "__global_roles__";
+
+var _getOrganizationsForUser2 = function _getOrganizationsForUser(myUserObj) {
+  var myOrganizations = [];
+  if (myUserObj) {
+    // figure out which organizations we belong to.
+    if (myUserObj.profile && (myUserObj.profile.organization || myUserObj.profile.organizations)) {
+      // note the plural
+      if (myUserObj.profile.organization) {
+        // there can be only one.
+        myOrganizations = [myUserObj.profile.organization];
+      } else {
+        // this guy is in multiple organizations.
+        myOrganizations = JSON.parse(JSON.stringify(myUserObj.profile.organizations)); // clone organizations
+      }
+    } else {
+      // default to the global group if there is no org info stored on the profile
+      myOrganizations = [_GLOBAL_GROUP];
+    }
+  }
+  return myOrganizations;
+};
+
+var _getRolesForUser2 = function _getRolesForUser(user, group) {
+  if (!user) return [];
+  if (group) {
+    if ('string' !== typeof group) return [];
+    if ('$' === group[0]) return [];
+
+    // convert any periods to underscores
+    group = group.replace(/\./g, '_');
+  }
+
+  if ('object' !== (typeof user === 'undefined' ? 'undefined' : _typeof(user))) {
+    // invalid user object
+    return [];
+  }
+
+  if (!user || !user.roles) return [];
+
+  if (group) {
+    return _.union(user.roles[group] || [], user.roles[_GLOBAL_GROUP] || []);
+  }
+
+  if (_.isArray(user.roles)) return user.roles;
+
+  // using groups but group not specified. return global group, if exists
+  return user.roles[_GLOBAL_GROUP] || [];
+};
 
 var RoleHierarchy = function (_Hierarchy) {
   _inherits(RoleHierarchy, _Hierarchy);
@@ -62,25 +110,14 @@ var RoleHierarchy = function (_Hierarchy) {
 
   }, {
     key: '_getOrganizationsForUser',
+
+
+    /**
+     * Deprecated - use RoleHierarchy.getOrganizationsForUser instead.
+     * @param {*} myUserObj 
+     */
     value: function _getOrganizationsForUser(myUserObj) {
-      var myOrganizations = [];
-      if (myUserObj) {
-        // figure out which organizations we belong to.
-        if (myUserObj.profile && (myUserObj.profile.organization || myUserObj.profile.organizations)) {
-          // note the plural
-          if (myUserObj.profile.organization) {
-            // there can be only one.
-            myOrganizations = [myUserObj.profile.organization];
-          } else {
-            // this guy is in multiple organizations.
-            myOrganizations = JSON.parse(JSON.stringify(myUserObj.profile.organizations)); // clone organizations
-          }
-        } else {
-          // default to the global group if there is no org info stored on the profile
-          myOrganizations = [_GLOBAL_GROUP];
-        }
-      }
-      return myOrganizations;
+      return _getOrganizationsForUser2(myUserObj);
     }
 
     /**
@@ -369,32 +406,26 @@ var RoleHierarchy = function (_Hierarchy) {
       return profileFilterCriteria;
     }
   }], [{
+    key: 'getOrganizationsForUser',
+    value: function getOrganizationsForUser(myUserObj) {
+      return _getOrganizationsForUser2(myUserObj);
+    }
+  }, {
+    key: 'getRolesForUser',
+    value: function getRolesForUser(user, group) {
+      return _getRolesForUser2(user, group);
+    }
+
+    /**
+     * Deprecated. Use RoleHierarchy.getRolesForUser instead.
+     * @param {*} user 
+     * @param {*} group 
+     */
+
+  }, {
     key: '_getRolesForUser',
     value: function _getRolesForUser(user, group) {
-      if (!user) return [];
-      if (group) {
-        if ('string' !== typeof group) return [];
-        if ('$' === group[0]) return [];
-
-        // convert any periods to underscores
-        group = group.replace(/\./g, '_');
-      }
-
-      if ('object' !== (typeof user === 'undefined' ? 'undefined' : _typeof(user))) {
-        // invalid user object
-        return [];
-      }
-
-      if (!user || !user.roles) return [];
-
-      if (group) {
-        return _.union(user.roles[group] || [], user.roles[_GLOBAL_GROUP] || []);
-      }
-
-      if (_.isArray(user.roles)) return user.roles;
-
-      // using groups but group not specified. return global group, if exists
-      return user.roles[_GLOBAL_GROUP] || [];
+      return _getRolesForUser2(user, group);
     }
   }]);
 

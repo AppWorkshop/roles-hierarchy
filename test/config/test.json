@@ -22,7 +22,6 @@
                   "subordinates": [
                     {
                       "name": "student",
-                      // a student can see the following fields
                       "visibleUserFields": {
                         "_id": 1,
                         "username": 1,
@@ -31,16 +30,13 @@
                       }
                     }
                   ],
-                  // new users created by a teacher get the student role
                   "defaultNewUserRoles": [
                     "student"
                   ],
-                  // new users created by a teacher get the teacher's profile.school and profile.classId
                   "profileFilters": [
                     "school",
                     "classId"
                   ],
-                  // a teacher can see everything a student can see, also email addresses
                   "visibleUserFields": {
                     "emails": 1
                   }

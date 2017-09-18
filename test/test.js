@@ -3,15 +3,30 @@ const assert = require('assert');
 const config = require('config');
 import RoleHierarchy from '..';
 
+let whichconfig = config || new function(){
+  this.getDescendantProp = (obj, desc) => {
+    var arr = desc.split(".");
+    while(arr.length && (obj = obj[arr.shift()]));
+    return obj;
+  };
+
+  this.confJSON = require('../test/config/test.json');
+
+  this.get = (key) => {
+    return this.getDescendantProp(this.confJSON, key);
+  }
+}();
+
+
 describe('RoleHierarchy', function () {
   let roleHierarchy;
 
   it('get a new RoleHierarchy', function (done) {
     roleHierarchy = new RoleHierarchy(
       {
-        "hierarchy": config.get("rolesHierarchyConfig.rolesHierarchy"),
-        "loggingConfig": config.get("rolesHierarchyConfig.loggingConfig"),
-        "treeModelConfig": config.get("rolesHierarchyConfig.treeModelConfig")
+        "hierarchy": whichconfig.get("rolesHierarchyConfig.rolesHierarchy"),
+        "loggingConfig": whichconfig.get("rolesHierarchyConfig.loggingConfig"),
+        "treeModelConfig": whichconfig.get("rolesHierarchyConfig.treeModelConfig")
       }
     );
     assert.ok(roleHierarchy);

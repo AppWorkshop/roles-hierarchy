@@ -1,9 +1,5 @@
 import Hierarchy from 'hierarchy-model';
 
-const winston = require('winston');
-process.env.SUPPRESS_NO_CONFIG_WARNING = 'y';
-const TreeModel = require('tree-model');
-const topiary = require('topiary');
 const _ = require('underscore');
 
 const _GLOBAL_GROUP = "__global_roles__";
@@ -24,13 +20,13 @@ const _getOrganizationsForUser = function _getOrganizationsForUser(myUserObj) {
     }
   }
   return myOrganizations;
-}
+};
 
 const _getRolesForUser = function _getRolesForUser(user, group) {
-  if (!user) return []
+  if (!user) return [];
   if (group) {
-    if ('string' !== typeof group) return []
-    if ('$' === group[0]) return []
+    if ('string' !== typeof group) return [];
+    if ('$' === group[0]) return [];
 
     // convert any periods to underscores
     group = group.replace(/\./g, '_')
@@ -41,20 +37,20 @@ const _getRolesForUser = function _getRolesForUser(user, group) {
     return []
   }
 
-  if (!user || !user.roles) return []
+  if (!user || !user.roles) return [];
 
   if (group) {
     return _.union(user.roles[group] || [], user.roles[_GLOBAL_GROUP] || [])
   }
 
   if (_.isArray(user.roles))
-    return user.roles
+    return user.roles;
 
   // using groups but group not specified. return global group, if exists
   return user.roles[_GLOBAL_GROUP] || []
-}
+};
 
-class RoleHierarchy extends Hierarchy {
+export default class RoleHierarchy extends Hierarchy {
 
   /**
    * create a new instance of RoleHierarchy
@@ -62,7 +58,7 @@ class RoleHierarchy extends Hierarchy {
    * {
    *   hierarchy: {"name":"teacher", "subordinates": [ {"name":"student"} ]},
    *   treeModelConfig: { "childrenPropertyName": "subordinates" },
-   *   loggingConfig: { "level": "debug"}
+   *   loggerCallback: an object that has debug, info, warn and error properties whose values are logging functions.
    * }
    */
   constructor(paramsObj) {
@@ -356,5 +352,3 @@ class RoleHierarchy extends Hierarchy {
   }
 
 }
-
-module.exports = RoleHierarchy;
